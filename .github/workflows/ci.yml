@@ -244,6 +244,8 @@ jobs:
 
       - name: Installer smoke test (local mode)
         if: ${{ matrix.run_linux_smoke_tests }}
+        env:
+          XDG_STATE_HOME: ${{ github.workspace }}/.installer-state
         run: |
           ./install.sh \
             --mode local \
@@ -275,29 +277,42 @@ jobs:
 
           if [ "$backend_ready" -ne 1 ] || [ "$frontend_ready" -ne 1 ]; then
             echo "Installer local smoke readiness failed: backend_ready=$backend_ready frontend_ready=$frontend_ready"
-            if [ -f .install-logs/backend.log ]; then
+            LOG_DIR="$XDG_STATE_HOME/openclaw-mission-control-install"
+            if [ -f "$LOG_DIR/backend.log" ]; then
               echo "----- backend log (tail) -----"
-              tail -n 200 .install-logs/backend.log || true
+              tail -n 200 "$LOG_DIR/backend.log" || true
             fi
-            if [ -f .install-logs/frontend.log ]; then
+            if [ -f "$LOG_DIR/frontend.log" ]; then
               echo "----- frontend log (tail) -----"
-              tail -n 200 .install-logs/frontend.log || true
+              tail -n 200 "$LOG_DIR/frontend.log" || true
             fi
             exit 1
           fi
 
       - name: Cleanup local processes and docker resources
         if: ${{ always() && matrix.run_linux_smoke_tests }}
+        env:
+          XDG_STATE_HOME: ${{ github.workspace }}/.installer-state
         run: |
-          if [ -f .install-logs/backend.pid ]; then kill "$(cat .install-logs/backend.pid)" || true; fi
-          if [ -f .install-logs/frontend.pid ]; then kill "$(cat .install-logs/frontend.pid)" || true; fi
+          LOG_DIR="$XDG_STATE_HOME/openclaw-mission-control-install"
+          if [ -f "$LOG_DIR/backend.pid" ]; then kill "$(cat "$LOG_DIR/backend.pid")" || true; fi
+          if [ -f "$LOG_DIR/frontend.pid" ]; then kill "$(cat "$LOG_DIR/frontend.pid")" || true; fi
           docker compose -f compose.yml --env-file .env down -v --remove-orphans || true
 
       - name: Cleanup macOS PostgreSQL
         if: ${{ always() && matrix.run_macos_local_smoke_test }}
         run: |
-          PG_BIN="$(brew --prefix postgresql@16)/bin"
-          if [ -d "$RUNNER_TEMP/pgdata" ]; then
+          if ! command -v brew >/dev/null 2>&1; then
+            exit 0
+          fi
+
+          PG_PREFIX="$(brew --prefix postgresql@16 2>/dev/null || true)"
+          if [ -z "$PG_PREFIX" ] || [ ! -d "$PG_PREFIX" ]; then
+            exit 0
+          fi
+
+          PG_BIN="$PG_PREFIX/bin"
+          if [ -d "$RUNNER_TEMP/pgdata" ] && [ -x "$PG_BIN/pg_ctl" ]; then
             "$PG_BIN/pg_ctl" -D "$RUNNER_TEMP/pgdata" -m fast stop || true
           fi
 
