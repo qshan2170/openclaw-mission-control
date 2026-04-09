@@ -7,6 +7,7 @@ import { DM_Serif_Display, IBM_Plex_Sans, Sora } from "next/font/google";
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { GlobalLoader } from "@/components/ui/global-loader";
 
 export const metadata: Metadata = {
@@ -35,18 +36,32 @@ const displayFont = DM_Serif_Display({
   weight: ["400"],
 });
 
+const themeInitScript = `(() => {
+  const key = "openclaw-mission-control-theme";
+  const stored = localStorage.getItem(key) || "system";
+  const resolved = stored === "system"
+    ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+    : stored;
+  document.documentElement.classList.toggle("dark", resolved === "dark");
+  document.documentElement.style.colorScheme = resolved;
+  document.documentElement.dataset.theme = stored;
+})();`;
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${bodyFont.variable} ${headingFont.variable} ${displayFont.variable} min-h-screen bg-app text-strong antialiased`}
+        className={`${bodyFont.variable} ${headingFont.variable} ${displayFont.variable} min-h-screen bg-app text-strong antialiased transition-colors duration-200`}
       >
-        <AuthProvider>
-          <QueryProvider>
-            <GlobalLoader />
-            {children}
-          </QueryProvider>
-        </AuthProvider>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <ThemeProvider>
+          <AuthProvider>
+            <QueryProvider>
+              <GlobalLoader />
+              {children}
+            </QueryProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
