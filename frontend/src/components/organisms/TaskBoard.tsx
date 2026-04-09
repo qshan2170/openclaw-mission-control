@@ -365,7 +365,7 @@ export const TaskBoard = memo(function TaskBoard({
       data-testid="task-board"
       className={cn(
         // Mobile-first: stack columns vertically to avoid horizontal scrolling.
-        "grid grid-cols-1 gap-4 overflow-x-hidden pb-6",
+        "grid grid-cols-1 gap-4 overflow-x-hidden rounded-2xl pb-6",
         // Desktop/tablet: switch back to horizontally scrollable kanban columns.
         "sm:grid-flow-col sm:auto-cols-[minmax(260px,320px)] sm:grid-cols-none sm:overflow-x-auto",
       )}
@@ -430,7 +430,7 @@ export const TaskBoard = memo(function TaskBoard({
             onDragOver={readOnly ? undefined : handleDragOver(column.status)}
             onDragLeave={readOnly ? undefined : handleDragLeave(column.status)}
           >
-            <div className="column-header z-10 rounded-t-xl border border-b-0 border-slate-200 bg-white px-4 py-3 sm:sticky sm:top-0 sm:bg-white/80 sm:backdrop-blur">
+            <div className="column-header z-10 rounded-t-xl border border-b-0 border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950/95 sm:sticky sm:top-0 sm:bg-white/80 sm:backdrop-blur dark:sm:bg-slate-950/85">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className={cn("h-2 w-2 rounded-full", column.dot)} />
@@ -487,7 +487,7 @@ export const TaskBoard = memo(function TaskBoard({
                 </div>
               ) : null}
             </div>
-            <div className="rounded-b-xl border border-t-0 border-slate-200 bg-white p-3">
+            <div className="rounded-b-xl border border-t-0 border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950/70">
               <div className="space-y-3">
                 {filteredTasks.map((task) => {
                   const dueState = resolveDueState(task);

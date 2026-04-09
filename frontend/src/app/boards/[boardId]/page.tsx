@@ -3096,18 +3096,18 @@ export default function BoardDetailPage() {
         <DashboardSidebar />
         <main
           className={cn(
-            "flex-1 bg-gradient-to-br from-slate-50 to-slate-100",
+            "flex-1 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900",
             isSidePanelOpen ? "overflow-hidden" : "overflow-y-auto",
           )}
         >
-          <div className="sticky top-0 z-30 border-b border-slate-200 bg-white shadow-sm">
+          <div className="sticky top-0 z-30 border-b border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/95 dark:shadow-black/20">
             <div className="px-4 py-4 md:px-8 md:py-6">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <h1 className="mt-2 text-2xl font-semibold text-slate-900 tracking-tight">
+                  <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
                     {board?.name ?? "Board"}
                   </h1>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                     Keep tasks moving through your workflow.
                   </p>
                   {isBoardLeadProvisioning ? (
@@ -3118,7 +3118,7 @@ export default function BoardDetailPage() {
                   ) : null}
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1">
+                  <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-900/80">
                     <button
                       className={cn(
                         "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
@@ -3239,8 +3239,8 @@ export default function BoardDetailPage() {
 
           <div className="relative flex flex-col gap-4 p-4 md:flex-row md:gap-6 md:p-6">
             {isOrgAdmin ? (
-              <aside className="flex w-full flex-col rounded-xl border border-slate-200 bg-white shadow-sm md:h-full md:w-64">
-                <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+              <aside className="flex w-full flex-col rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/70 dark:shadow-black/20 md:h-full md:w-64">
+                <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                       Agents
@@ -3303,7 +3303,7 @@ export default function BoardDetailPage() {
 
             <div className="min-w-0 flex-1 space-y-6">
               {error && (
-                <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-600 shadow-sm">
+                <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-300 dark:shadow-black/20">
                   {error}
                 </div>
               )}
@@ -3544,8 +3544,8 @@ export default function BoardDetailPage() {
                       readOnly={!canWrite}
                     />
                   ) : (
-                    <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-                      <div className="border-b border-slate-200 px-5 py-4">
+                    <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/80 dark:shadow-black/20">
+                      <div className="border-b border-slate-200 px-5 py-4 dark:border-slate-800">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-sm font-semibold text-slate-900">
