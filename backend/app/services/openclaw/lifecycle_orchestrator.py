@@ -28,6 +28,7 @@ from app.services.openclaw.lifecycle_queue import (
     QueuedAgentLifecycleReconcile,
     enqueue_lifecycle_reconcile,
 )
+from app.services.openclaw.internal.session_keys import validate_agent_session_key
 from app.services.openclaw.provisioning import OpenClawGatewayProvisioner
 from app.services.organizations import get_org_owner_user
 
@@ -85,6 +86,14 @@ class AgentLifecycleOrchestrator(OpenClawDBService):
                     ),
                 )
 
+        validate_agent_session_key(
+            agent_id=locked.id,
+            board_id=locked.board_id,
+            gateway_id=locked.gateway_id,
+            is_board_lead=locked.is_board_lead,
+            openclaw_session_id=locked.openclaw_session_id,
+        )
+
         raw_token = auth_token or mint_agent_token(locked)
         mark_provision_requested(
             locked,
@@ -120,7 +129,13 @@ class AgentLifecycleOrchestrator(OpenClawDBService):
                 wakeup_verb=wakeup_verb,
             )
         except OpenClawGatewayError as exc:
-            locked.last_provision_error = str(exc)
+            session_key = (locked.openclaw_session_id or "").strip() or "<empty>"
+            board_scope = str(locked.board_id) if locked.board_id is not None else "<gateway-main>"
+            locked.last_provision_error = (
+                f"gateway {action} failed for agent_id={locked.id} "
+                f"board_id={board_scope} is_board_lead={locked.is_board_lead} "
+                f"session_key={session_key}: {exc}"
+            )
             locked.updated_at = utcnow()
             self.session.add(locked)
             await self.session.commit()
@@ -128,11 +143,21 @@ class AgentLifecycleOrchestrator(OpenClawDBService):
             if raise_gateway_errors:
                 raise HTTPException(
                     status_code=status.HTTP_502_BAD_GATEWAY,
-                    detail=f"Gateway {action} failed: {exc}",
+                    detail=(
+                        f"Gateway {action} failed for agent {locked.id} "
+                        f"(board_id={board_scope}, is_board_lead={locked.is_board_lead}, "
+                        f"session_key={session_key}): {exc}"
+                    ),
                 ) from exc
             return locked
         except (OSError, RuntimeError, ValueError) as exc:
-            locked.last_provision_error = str(exc)
+            session_key = (locked.openclaw_session_id or "").strip() or "<empty>"
+            board_scope = str(locked.board_id) if locked.board_id is not None else "<gateway-main>"
+            locked.last_provision_error = (
+                f"unexpected {action} error for agent_id={locked.id} "
+                f"board_id={board_scope} is_board_lead={locked.is_board_lead} "
+                f"session_key={session_key}: {exc}"
+            )
             locked.updated_at = utcnow()
             self.session.add(locked)
             await self.session.commit()
@@ -140,7 +165,11 @@ class AgentLifecycleOrchestrator(OpenClawDBService):
             if raise_gateway_errors:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=f"Unexpected error {action}ing gateway provisioning.",
+                    detail=(
+                        f"Unexpected error {action}ing gateway provisioning for agent {locked.id} "
+                        f"(board_id={board_scope}, is_board_lead={locked.is_board_lead}, "
+                        f"session_key={session_key})."
+                    ),
                 ) from exc
             return locked
 

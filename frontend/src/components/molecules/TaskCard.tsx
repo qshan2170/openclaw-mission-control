@@ -70,11 +70,11 @@ export function TaskCard({
   return (
     <div
       className={cn(
-        "group relative cursor-pointer rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md",
+        "group relative cursor-pointer rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700 dark:hover:bg-slate-900",
         isDragging && "opacity-60 shadow-none",
-        hasPendingApproval && "border-amber-200 bg-amber-50/40",
-        isBlocked && "border-rose-200 bg-rose-50/50",
-        needsLeadReview && "border-indigo-200 bg-indigo-50/30",
+        hasPendingApproval && "border-amber-200 bg-amber-50/40 dark:border-amber-900/70 dark:bg-amber-950/30",
+        isBlocked && "border-rose-200 bg-rose-50/50 dark:border-rose-900/70 dark:bg-rose-950/25",
+        needsLeadReview && "border-indigo-200 bg-indigo-50/30 dark:border-indigo-900/70 dark:bg-indigo-950/25",
       )}
       draggable={draggable}
       onDragStart={onDragStart}
@@ -99,7 +99,7 @@ export function TaskCard({
       ) : null}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-2">
-          <p className="text-sm font-medium text-slate-900 line-clamp-2 break-words">
+          <p className="text-sm font-medium text-slate-900 line-clamp-2 break-words dark:text-slate-100">
             {title}
           </p>
           {isBlocked ? (
@@ -125,7 +125,7 @@ export function TaskCard({
               {visibleTags.map((tag) => (
                 <span
                   key={tag.id}
-                  className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-700"
+                  className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                 >
                   <span
                     className="h-1.5 w-1.5 rounded-full"
@@ -153,7 +153,7 @@ export function TaskCard({
           </span>
         </div>
       </div>
-      <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+      <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
         <div className="flex items-center gap-2">
           <UserCircle className="h-4 w-4 text-slate-400" />
           <span>{assignee ?? "Unassigned"}</span>

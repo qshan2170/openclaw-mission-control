@@ -187,6 +187,53 @@ class OpenClawProvisioningService(OpenClawDBService):
                 await self.session.refresh(existing)
             return existing, False
 
+        desired_name = config_options.agent_name or self.lead_agent_name(board)
+        adoptable_non_leads = (
+            await self.session.exec(
+                select(Agent)
+                .where(Agent.board_id == board.id)
+                .where(col(Agent.is_board_lead).is_(False))
+                .where(Agent.name == desired_name),
+            )
+        ).all()
+        if len(adoptable_non_leads) > 1:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(
+                    "Cannot provision board lead because multiple non-lead agents already use "
+                    f"the reserved lead name '{desired_name}' on board {board.id}."
+                ),
+            )
+        if len(adoptable_non_leads) == 1:
+            adopted = adoptable_non_leads[0]
+            adopted.is_board_lead = True
+            adopted.gateway_id = request.gateway.id
+            adopted.openclaw_session_id = self.lead_session_key(board)
+            if adopted.heartbeat_config is None:
+                adopted.heartbeat_config = DEFAULT_HEARTBEAT_CONFIG.copy()
+            adopted.updated_at = utcnow()
+            self.session.add(adopted)
+            await self.session.commit()
+            await self.session.refresh(adopted)
+            raw_token = mint_agent_token(adopted)
+            await self.add_commit_refresh(adopted)
+            adopted = await AgentLifecycleOrchestrator(self.session).run_lifecycle(
+                gateway=request.gateway,
+                agent_id=adopted.id,
+                board=board,
+                user=request.user,
+                action=config_options.action,
+                auth_token=raw_token,
+                force_bootstrap=True,
+                reset_session=True,
+                wake=True,
+                deliver_wakeup=True,
+                wakeup_verb=None,
+                clear_confirm_token=False,
+                raise_gateway_errors=True,
+            )
+            return adopted, False
+
         merged_identity_profile: dict[str, Any] = {
             "role": "Board Lead",
             "communication_style": "direct, concise, practical",
@@ -202,7 +249,7 @@ class OpenClawProvisioningService(OpenClawDBService):
             )
 
         agent = Agent(
-            name=config_options.agent_name or self.lead_agent_name(board),
+            name=desired_name,
             board_id=board.id,
             gateway_id=request.gateway.id,
             is_board_lead=True,
