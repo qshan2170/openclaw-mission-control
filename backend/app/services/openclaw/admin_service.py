@@ -56,7 +56,7 @@ class DefaultGatewayMainAgentManager(AbstractGatewayMainAgentManager):
     """Default naming/profile strategy for gateway-main agents."""
 
     def build_main_agent_name(self, gateway: Gateway) -> str:
-        return f"{gateway.name} Gateway Agent"
+        return f"{gateway.name} Mission Controller Agent"
 
     def build_identity_profile(self) -> dict[str, str]:
         return {
