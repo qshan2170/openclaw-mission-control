@@ -205,9 +205,9 @@ def _workspace_path(agent: Agent, workspace_root: str) -> str:
     # display name (e.g. "Lead Agent").
     key = _agent_key(agent)
 
-    # Gateway-main agents use a human-readable workspace directory derived from the
-    # current display name to reduce confusion with the OpenClaw default `main` agent.
-    if key.startswith("mc-gateway-"):
+    # Use human-readable workspace directories for special agents whose stable ids are
+    # implementation details and easy to confuse in Finder.
+    if key.startswith("mc-gateway-") or key.startswith("lead-"):
         return f"{root}/workspace-{slugify(agent.name or key)}"
 
     return f"{root}/workspace-{slugify(key)}"
